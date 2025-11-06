@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criador de Fichas D&D</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Text', serif;
+            background: linear-gradient(135deg, #2c1810 0%, #4a2c1a 100%);
+            min-height: 100vh;
+            color: #2c1810;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(139, 69, 19, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(139, 69, 19, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 20px;
+            background: linear-gradient(to bottom, rgba(139, 69, 19, 0.3), transparent);
+            border-bottom: 3px solid #8b4513;
+            position: relative;
+        }
+
+        .header::after {
+            content: '⚔';
+            position: absolute;
+            font-size: 40px;
+            color: #d4af37;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 3.5em;
+            color: #d4af37;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            color: #f4e4c1;
+            font-style: italic;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .parchment {
+            background: linear-gradient(to bottom, #f4e4c1 0%, #e8d4a8 50%, #f4e4c1 100%);
+            border: 3px solid #8b4513;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 
+                0 10px 30px rgba(0,0,0,0.5),
+                inset 0 0 100px rgba(139, 69, 19, 0.1);
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .parchment::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(139, 69, 19, 0.02) 2px,
+                    rgba(139, 69, 19, 0.02) 4px
+                );
+            pointer-events: none;
+            border-radius: 10px;
+        }
+
+        .btn {
+            font-family: 'Cinzel', serif;
+            background: linear-gradient(to bottom, #8b4513 0%, #654321 100%);
+            color: #f4e4c1;
+            border: 3px solid #d4af37;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            background: linear-gradient(to bottom, #a0522d 0%, #8b4513 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(0,0,0,0.5);
+            border-color: #ffd700;
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .home-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            align-items: center;
+            margin-top: 50px;
+        }
+
+        .home-buttons .btn {
+            width: 100%;
+            max-width: 400px;
+            padding: 25px;
+            font-size: 1.4em;
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            font-family: 'Cinzel', serif;
+            font-size: 1.3em;
+            color: #654321;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            font-family: 'Crimson Text', serif;
+            font-size: 1.1em;
+            background: rgba(255, 255, 255, 0.7);
+            border: 2px solid #8b4513;
+            border-radius: 5px;
+            color: #2c1810;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #d4af37;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
+        .attributes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .attribute-box {
+            background: rgba(139, 69, 19, 0.1);
+            padding: 20px;
+            border: 2px solid #8b4513;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .attribute-label {
+            font-family: 'Cinzel', serif;
+            font-size: 1.2em;
+            color: #654321;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .attribute-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #8b4513;
+            margin: 10px 0;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(to right, #8b4513, #d4af37);
+            border-radius: 5px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: #d4af37;
+            border: 3px solid #654321;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            background: #d4af37;
+            border: 3px solid #654321;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .modifier {
+            font-size: 1.1em;
+            color: #654321;
+            margin-top: 5px;
+        }
+
+        .characters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .character-card {
+            background: rgba(244, 228, 193, 0.95);
+            border: 3px solid #8b4513;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .character-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            border-color: #d4af37;
+        }
+
+        .character-name {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8em;
+            color: #654321;
+            margin-bottom: 15px;
+            text-align: center;
+            border-bottom: 2px solid #8b4513;
+            padding-bottom: 10px;
+        }
+
+        .character-info {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #8b4513;
+        }
+
+        .delete-btn {
+            background: linear-gradient(to bottom, #8b2e2e 0%, #5c1f1f 100%);
+            border-color: #8b2e2e;
+            padding: 10px 20px;
+            font-size: 0.9em;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .delete-btn:hover {
+            background: linear-gradient(to bottom, #a03838 0%, #8b2e2e 100%);
+            border-color: #a03838;
+        }
+
+        .back-btn {
+            margin-top: 30px;
+            background: linear-gradient(to bottom, #5c5c5c 0%, #3a3a3a 100%);
+            border-color: #8b8b8b;
+        }
+
+        .back-btn:hover {
+            background: linear-gradient(to bottom, #6e6e6e 0%, #5c5c5c 100%);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #654321;
+            font-size: 1.3em;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5em;
+            }
+
+            .parchment {
+                padding: 25px;
+            }
+
+            .attributes-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .characters-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Dungeons & Dragons</h1>
+            <p class="subtitle">Criador de Fichas de Personagem</p>
+        </div>
+
+        <!-- HOME PAGE -->
+        <div id="homePage" class="page active">
+            <div class="parchment">
+                <div class="home-buttons">
+                    <button class="btn" onclick="showPage('createPage')">
+                        ⚔️ Criar Ficha
+                    </button>
+                    <button class="btn" onclick="showPage('listPage')">
+                        📜 Suas Fichas
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CREATE PAGE -->
+        <div id="createPage" class="page">
+            <div class="parchment">
+                <h2 style="font-family: 'Cinzel', serif; text-align: center; font-size: 2em; color: #654321; margin-bottom: 30px;">Nova Ficha de Personagem</h2>
+                
+                <form id="characterForm">
+                    <div class="form-group">
+                        <label for="charName">Nome do Personagem</label>
+                        <input type="text" id="charName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="charRace">Raça</label>
+                        <input type="text" id="charRace" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="charClass">Classe</label>
+                        <input type="text" id="charClass" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="charBackground">Antecedente</label>
+                        <input type="text" id="charBackground" required>
+                    </div>
+
+                    <h3 style="font-family: 'Cinzel', serif; text-align: center; font-size: 1.6em; color: #654321; margin: 40px 0 20px;">Atributos</h3>
+                    
+                    <div class="attributes-grid">
+                        <div class="attribute-box">
+                            <div class="attribute-label">Força</div>
+                            <div class="attribute-value" id="strValue">10</div>
+                            <input type="range" id="strength" min="3" max="20" value="10" oninput="updateAttribute('str', this.value)">
+                            <div class="modifier" id="strMod">+0</div>
+                        </div>
+
+                        <div class="attribute-box">
+                            <div class="attribute-label">Destreza</div>
+                            <div class="attribute-value" id="dexValue">10</div>
+                            <input type="range" id="dexterity" min="3" max="20" value="10" oninput="updateAttribute('dex', this.value)">
+                            <div class="modifier" id="dexMod">+0</div>
+                        </div>
+
+                        <div class="attribute-box">
+                            <div class="attribute-label">Constituição</div>
+                            <div class="attribute-value" id="conValue">10</div>
+                            <input type="range" id="constitution" min="3" max="20" value="10" oninput="updateAttribute('con', this.value)">
+                            <div class="modifier" id="conMod">+0</div>
+                        </div>
+
+                        <div class="attribute-box">
+                            <div class="attribute-label">Inteligência</div>
+                            <div class="attribute-value" id="intValue">10</div>
+                            <input type="range" id="intelligence" min="3" max="20" value="10" oninput="updateAttribute('int', this.value)">
+                            <div class="modifier" id="intMod">+0</div>
+                        </div>
+
+                        <div class="attribute-box">
+                            <div class="attribute-label">Sabedoria</div>
+                            <div class="attribute-value" id="wisValue">10</div>
+                            <input type="range" id="wisdom" min="3" max="20" value="10" oninput="updateAttribute('wis', this.value)">
+                            <div class="modifier" id="wisMod">+0</div>
+                        </div>
+
+                        <div class="attribute-box">
+                            <div class="attribute-label">Carisma</div>
+                            <div class="attribute-value" id="chaValue">10</div>
+                            <input type="range" id="charisma" min="3" max="20" value="10" oninput="updateAttribute('cha', this.value)">
+                            <div class="modifier" id="chaMod">+0</div>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 40px;">
+                        <button type="submit" class="btn">💾 Salvar Ficha</button>
+                        <button type="button" class="btn back-btn" onclick="showPage('homePage')">↩️ Voltar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- LIST PAGE -->
+        <div id="listPage" class="page">
+            <div class="parchment">
+                <h2 style="font-family: 'Cinzel', serif; text-align: center; font-size: 2em; color: #654321; margin-bottom: 30px;">Suas Fichas</h2>
+                <div id="charactersList" class="characters-grid"></div>
+                <div style="text-align: center;">
+                    <button class="btn back-btn" onclick="showPage('homePage')">↩️ Voltar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let characters = {};
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            
+            if (pageId === 'listPage') {
+                loadCharacters();
+            }
+        }
+
+        function calculateModifier(score) {
+            return Math.floor((score - 10) / 2);
+        }
+
+        function updateAttribute(attr, value) {
+            document.getElementById(attr + 'Value').textContent = value;
+            const mod = calculateModifier(parseInt(value));
+            const modText = mod >= 0 ? '+' + mod : mod;
+            document.getElementById(attr + 'Mod').textContent = modText;
+        }
+
+        document.getElementById('characterForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const character = {
+                name: document.getElementById('charName').value,
+                race: document.getElementById('charRace').value,
+                class: document.getElementById('charClass').value,
+                background: document.getElementById('charBackground').value,
+                attributes: {
+                    strength: parseInt(document.getElementById('strength').value),
+                    dexterity: parseInt(document.getElementById('dexterity').value),
+                    constitution: parseInt(document.getElementById('constitution').value),
+                    intelligence: parseInt(document.getElementById('intelligence').value),
+                    wisdom: parseInt(document.getElementById('wisdom').value),
+                    charisma: parseInt(document.getElementById('charisma').value)
+                }
+            };
+
+            const id = Date.now().toString();
+            characters[id] = character;
+            saveToStorage();
+            
+            alert('✨ Ficha salva com sucesso!');
+            this.reset();
+            updateAttribute('str', 10);
+            updateAttribute('dex', 10);
+            updateAttribute('con', 10);
+            updateAttribute('int', 10);
+            updateAttribute('wis', 10);
+            updateAttribute('cha', 10);
+            
+            showPage('listPage');
+        });
+
+        function saveToStorage() {
+            const data = JSON.stringify(characters);
+            document.cookie = 'dndCharacters=' + encodeURIComponent(data) + '; path=/; max-age=31536000';
+        }
+
+        function loadFromStorage() {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'dndCharacters') {
+                    try {
+                        characters = JSON.parse(decodeURIComponent(value));
+                    } catch (e) {
+                        characters = {};
+                    }
+                    return;
+                }
+            }
+            characters = {};
+        }
+
+        function loadCharacters() {
+            loadFromStorage();
+            const container = document.getElementById('charactersList');
+            
+            if (Object.keys(characters).length === 0) {
+                container.innerHTML = '<div class="empty-state">Nenhuma ficha criada ainda.<br>Comece sua aventura criando seu primeiro personagem!</div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            
+            for (let id in characters) {
+                const char = characters[id];
+                const card = document.createElement('div');
+                card.className = 'character-card';
+                card.innerHTML = `
+                    <div class="character-name">${char.name}</div>
+                    <div class="character-info"><span class="info-label">Raça:</span> ${char.race}</div>
+                    <div class="character-info"><span class="info-label">Classe:</span> ${char.class}</div>
+                    <div class="character-info"><span class="info-label">Antecedente:</span> ${char.background}</div>
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #8b4513;">
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 0.9em;">
+                            <div><strong>FOR:</strong> ${char.attributes.strength}</div>
+                            <div><strong>DES:</strong> ${char.attributes.dexterity}</div>
+                            <div><strong>CON:</strong> ${char.attributes.constitution}</div>
+                            <div><strong>INT:</strong> ${char.attributes.intelligence}</div>
+                            <div><strong>SAB:</strong> ${char.attributes.wisdom}</div>
+                            <div><strong>CAR:</strong> ${char.attributes.charisma}</div>
+                        </div>
+                    </div>
+                    <button class="btn delete-btn" onclick="deleteCharacter('${id}')">🗑️ Excluir</button>
+                `;
+                container.appendChild(card);
+            }
+        }
+
+        function deleteCharacter(id) {
+            if (confirm('Tem certeza que deseja excluir esta ficha?')) {
+                delete characters[id];
+                saveToStorage();
+                loadCharacters();
+            }
+        }
+
+        loadFromStorage();
+    </script>
+</body>
+</html>

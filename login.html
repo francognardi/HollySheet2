@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>HollySheet — Portal do Aventureiro</title>
+	<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="login.css">
+</head>
+<body>
+	<div class="bg"></div>
+	<main class="login-wrap">
+		<header class="title">
+			<h1>HollySheet</h1>
+			<p class="subtitle">Portal do Aventureiro — Entre em sua campanha</p>
+		</header>
+
+			<form id="login-form" class="login-card" novalidate>
+				<div class="crest" aria-hidden="true">
+				<!-- simple SVG dragon crest -->
+				<svg width="120" height="80" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+					<defs>
+						<linearGradient id="g" x1="0" x2="1">
+							<stop offset="0" stop-color="#f7d99c"/>
+							<stop offset="1" stop-color="#c48b44"/>
+						</linearGradient>
+					</defs>
+					<path d="M10 60 C 30 10, 90 10, 110 60 L90 55 C70 40, 50 40,30 55 Z" fill="url(#g)" stroke="#5b2e0e" stroke-width="2"/>
+					<circle cx="60" cy="30" r="6" fill="#5b2e0e" />
+				</svg>
+			</div>
+
+					<div class="field">
+						<label for="email">Email</label>
+						<input id="email" name="email" type="email" autocomplete="email" required />
+					</div>
+
+			<div class="field">
+				<label for="password">Senha</label>
+				<div class="pw-wrap">
+					<input id="password" name="password" type="password" autocomplete="current-password" required />
+					<button type="button" id="toggle-pw" aria-label="Mostrar senha">🔒</button>
+				</div>
+			</div>
+
+							<div class="options">
+								<label class="remember"><input type="checkbox" id="remember" name="remember"> Lembrar-me</label>
+								<a href="#" id="forgot" class="forgot">Esqueci a senha</a>
+							</div>
+
+					<div class="actions">
+						<button type="submit" class="btn primary">Entrar</button>
+						<button type="button" class="btn secondary" id="demo">Entrar como Convidado</button>
+						<span id="loading-login" style="display:none;margin-left:8px" aria-hidden="true" class="spinner"></span>
+					</div>
+
+					<p class="signup-prompt">
+						Novo por aqui? <a href="cadastro.html" class="signup-link">Crie sua conta de aventureiro</a>
+					</p>
+
+			<div id="message" role="status" aria-live="polite"></div>
+		</form>
+
+		<footer class="foot">Feito para a mesa — D20 Powered</footer>
+	</main>
+		<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+		<script src="firebase-config.js"></script>
+	<script src="login.js"></script>
+</body>
+</html>

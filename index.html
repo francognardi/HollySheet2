@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Criador de Fichas D&D</title>
+    <!-- Firebase (compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -365,6 +370,10 @@
         <div class="header">
             <h1>Dungeons & Dragons</h1>
             <p class="subtitle">Criador de Fichas de Personagem</p>
+            <div id="user-area" style="position:absolute;top:18px;right:20px;display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:8px;background:rgba(0,0,0,0.05);">
+                <span id="display-name" style="color:#f4e4c1;font-weight:700;font-size:0.95em;text-shadow:1px 1px 2px rgba(0,0,0,0.5);">Visitante</span>
+                <button id="signout" style="display:none;padding:6px 10px;border-radius:6px;border:1px solid #7a5a44;background:transparent;color:#f4e4c1;cursor:pointer;font-weight:600">Sair</button>
+            </div>
         </div>
 
         <!-- HOME PAGE -->
@@ -516,43 +525,62 @@
 
             const id = Date.now().toString();
             characters[id] = character;
-            saveToStorage();
             
-            alert('✨ Ficha salva com sucesso!');
-            this.reset();
-            updateAttribute('str', 10);
-            updateAttribute('dex', 10);
-            updateAttribute('con', 10);
-            updateAttribute('int', 10);
-            updateAttribute('wis', 10);
-            updateAttribute('cha', 10);
-            
-            showPage('listPage');
+            saveToStorage().then(() => {
+                alert('✨ Ficha salva com sucesso!');
+                this.reset();
+                updateAttribute('str', 10);
+                updateAttribute('dex', 10);
+                updateAttribute('con', 10);
+                updateAttribute('int', 10);
+                updateAttribute('wis', 10);
+                updateAttribute('cha', 10);
+                
+                showPage('listPage');
+            }).catch(error => {
+                alert('Erro ao salvar a ficha. Tente novamente.');
+                console.error('Erro ao salvar:', error);
+            });
         });
 
         function saveToStorage() {
-            const data = JSON.stringify(characters);
-            document.cookie = 'dndCharacters=' + encodeURIComponent(data) + '; path=/; max-age=31536000';
+            if (!firebase.auth().currentUser) {
+                alert('Você precisa estar logado para salvar fichas!');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const userId = firebase.auth().currentUser.uid;
+            return firebase.database().ref('characters/' + userId).set(characters)
+                .then(() => {
+                    console.log('Fichas salvas com sucesso!');
+                })
+                .catch(error => {
+                    console.error('Erro ao salvar fichas:', error);
+                    alert('Erro ao salvar fichas. Verifique o console para mais detalhes.');
+                });
         }
 
         function loadFromStorage() {
-            const cookies = document.cookie.split(';');
-            for (let cookie of cookies) {
-                const [name, value] = cookie.trim().split('=');
-                if (name === 'dndCharacters') {
-                    try {
-                        characters = JSON.parse(decodeURIComponent(value));
-                    } catch (e) {
-                        characters = {};
-                    }
-                    return;
-                }
+            if (!firebase.auth().currentUser) {
+                characters = {};
+                return Promise.resolve();
             }
-            characters = {};
+
+            const userId = firebase.auth().currentUser.uid;
+            return firebase.database().ref('characters/' + userId).once('value')
+                .then(snapshot => {
+                    characters = snapshot.val() || {};
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar fichas:', error);
+                    alert('Erro ao carregar fichas. Verifique o console para mais detalhes.');
+                    characters = {};
+                });
         }
 
         function loadCharacters() {
-            loadFromStorage();
+            loadFromStorage().then(() => {
             const container = document.getElementById('charactersList');
             
             if (Object.keys(characters).length === 0) {
@@ -585,17 +613,67 @@
                 `;
                 container.appendChild(card);
             }
-        }
+        })};
 
         function deleteCharacter(id) {
             if (confirm('Tem certeza que deseja excluir esta ficha?')) {
                 delete characters[id];
-                saveToStorage();
-                loadCharacters();
+                saveToStorage().then(() => {
+                    loadCharacters();
+                });
             }
         }
 
-        loadFromStorage();
+        // Carregar fichas quando o usuário estiver autenticado
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                loadCharacters();
+            } else {
+                // Se não houver usuário, limpa a lista
+                const container = document.getElementById('charactersList');
+                container.innerHTML = '<div class="empty-state">Faça login para ver suas fichas!</div>';
+            }
+        });
+    </script>
+    <script>
+        // Mostra o nome do usuário autenticado (se o Firebase estiver carregado)
+        (function(){
+            const displayEl = document.getElementById('display-name');
+            const signoutBtn = document.getElementById('signout');
+
+            function showUser(user){
+                if (!user){
+                    displayEl.textContent = 'Visitante';
+                    signoutBtn.style.display = 'none';
+                    return;
+                }
+
+                // Prefer displayName, senão email, senão label para anônimo
+                let name = user.displayName || user.email || (user.isAnonymous ? 'Convidado' : 'Usuário');
+                displayEl.textContent = name;
+                signoutBtn.style.display = 'inline-block';
+            }
+
+            if (window.firebase && firebase.auth){
+                firebase.auth().onAuthStateChanged((user) => {
+                    try{ showUser(user); } catch(e){ console.error(e); }
+                });
+
+                signoutBtn.addEventListener('click', () => {
+                    firebase.auth().signOut().then(() => {
+                        // redireciona para login após logout
+                        window.location.href = 'login.html';
+                    }).catch(err => {
+                        console.error('Erro ao sair:', err);
+                        alert('Erro ao sair. Veja o console para detalhes.');
+                    });
+                });
+            } else {
+                // Firebase não carregado — apenas mostra 'Visitante'
+                console.warn('Firebase não disponível em index.html — o nome do usuário não será exibido.');
+                showUser(null);
+            }
+        })();
     </script>
 </body>
 </html>

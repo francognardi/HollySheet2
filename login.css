@@ -1,0 +1,86 @@
+/* Login estilo RPG Dungeons & Dragons */
+:root{
+	--bg:#f2e6d2;
+	--panel:#fff8ef;
+	--accent:#8b4b26;
+	--muted:#6b4b33;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+	margin:0;
+	font-family: 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif;
+	background: radial-gradient(circle at 10% 10%, #e7d7bd 0%, #f4e9d6 20%, #e9dec8 60%), linear-gradient(180deg, #f9efe0 0%, #f4e6cf 100%);
+	color:var(--muted);
+	display:flex;
+	align-items:center;
+	justify-content:center;
+	padding:40px;
+}
+.bg{position:fixed;inset:0;pointer-events:none;opacity:.12;background-image:repeating-linear-gradient(45deg, rgba(0,0,0,0.03) 0 1px, transparent 1px 30px);} 
+.login-wrap{max-width:760px;width:100%;display:grid;grid-template-columns:1fr 420px;gap:28px;align-items:start}
+.title{padding-left:28px}
+.title h1{font-family:'Cinzel', serif;margin:0;color:var(--accent);font-size:48px;letter-spacing:1px}
+.title .subtitle{margin-top:6px;color:#5a4130;font-weight:300}
+
+.login-card{
+	background:var(--panel);
+	padding:28px 28px 20px 28px;
+	border-radius:12px;
+	box-shadow: 0 10px 30px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.6);
+	border:3px solid rgba(139,75,38,0.12);
+	position:relative;
+}
+.crest{display:flex;justify-content:center;margin-bottom:6px}
+.field{margin:12px 0}
+.field label{display:block;font-size:14px;color:#6b4b33;margin-bottom:6px}
+.field input{width:100%;padding:10px 12px;border-radius:8px;border:1px solid rgba(107,75,51,0.15);font-size:16px;background:linear-gradient(180deg, rgba(255,255,255,0.6), rgba(245,235,220,0.6));}
+.pw-wrap{display:flex;gap:8px}
+.pw-wrap input{flex:1}
+#toggle-pw{background:#efe0c9;border:1px solid rgba(107,75,51,0.12);padding:0 10px;border-radius:8px;cursor:pointer}
+.options{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:14px}
+.options .forgot{color:var(--accent);text-decoration:none}
+.actions{display:flex;gap:10px;margin-top:18px}
+.btn{padding:10px 16px;border-radius:8px;border:0;cursor:pointer;font-weight:600}
+.btn.primary{background:linear-gradient(180deg,var(--accent),#6c3a1a);color:#fff;box-shadow:0 6px 12px rgba(139,75,38,0.18)}
+.btn.secondary{background:transparent;border:1px solid rgba(107,75,51,0.12);color:var(--accent)}
+#message{margin-top:12px;font-size:14px;min-height:20px}
+
+.foot{grid-column:1 / -1;margin-top:24px;color:#7a5a44;font-size:13px}
+
+/* Responsividade */
+@media (max-width:900px){
+	.login-wrap{grid-template-columns:1fr;}
+	.title{order:2;padding-left:0;text-align:center}
+}
+
+/* small parchment edge effect */
+.login-card::before{content:"";position:absolute;inset:-8px;border-radius:16px;padding:4px;background:linear-gradient(45deg, rgba(139,75,38,0.04), rgba(0,0,0,0.02));z-index:-1}
+
+/* success / error */
+.msg-success{color:green}
+.msg-error{color:#8b2e2e}
+
+/* Loading spinner and disabled state */
+.spinner{width:22px;height:22px;border:3px solid rgba(0,0,0,0.08);border-top-color:var(--accent);border-radius:50%;animation:spin .9s linear infinite;display:inline-block;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn[disabled]{opacity:.6;cursor:not-allowed}
+.form-loading{opacity:.9}
+
+/* Link para cadastro */
+.signup-prompt {
+	text-align: center;
+	margin: 20px 0 0;
+	font-size: 0.95em;
+	color: var(--muted);
+}
+.signup-link {
+	color: var(--accent);
+	text-decoration: none;
+	font-weight: 500;
+	transition: color 0.2s;
+}
+.signup-link:hover {
+	color: #a65c30;
+	text-decoration: underline;
+}

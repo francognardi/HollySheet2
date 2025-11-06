@@ -11,6 +11,10 @@
         <div class="header">
             <h1>Dungeons & Dragons</h1>
             <p class="subtitle">Criador de Fichas de Personagem</p>
+            <div id="user-area" class="user-area">
+                <span id="display-name" class="display-name">Visitante</span>
+                <button id="signout" class="signout-btn">Sair</button>
+            </div>
         </div>
 
         <!-- HOME PAGE -->
@@ -31,5 +35,50 @@
     <script src="js/app.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/storage.js"></script>
+    <!-- Firebase (compat) carregado para permitir exibir o nome do usuário -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script src="../../firebase-config.js"></script>
+    <script>
+        // Mostra o nome do usuário autenticado (se o Firebase estiver carregado)
+        (function(){
+            const displayEl = document.getElementById('display-name');
+            const signoutBtn = document.getElementById('signout');
+
+            function showUser(user){
+                if (!user){
+                    displayEl.textContent = 'Visitante';
+                    signoutBtn.style.display = 'none';
+                    return;
+                }
+
+                // Prefer displayName, senão email, senão label para anônimo
+                let name = user.displayName || user.email || (user.isAnonymous ? 'Convidado' : 'Usuário');
+                displayEl.textContent = name;
+                signoutBtn.style.display = 'inline-block';
+            }
+
+            if (window.firebase && firebase.auth){
+                firebase.auth().onAuthStateChanged((user) => {
+                    try{ showUser(user); } catch(e){ console.error(e); }
+                });
+
+                signoutBtn.addEventListener('click', () => {
+                    firebase.auth().signOut().then(() => {
+                        // opcional: redireciona para a página principal do site
+                        window.location.reload();
+                    }).catch(err => {
+                        console.error('Erro ao sair:', err);
+                        alert('Erro ao sair. Veja o console para detalhes.');
+                    });
+                });
+            } else {
+                // Firebase não carregado — apenas mostra 'Visitante'
+                console.warn('Firebase não disponível em index.html — o nome do usuário não será exibido.');
+                showUser(null);
+            }
+        })();
+    </script>
 </body>
 </html>
